@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CivicLens - an educational civic analytics tool for grievance awareness (SDG 11 & 16). Not an official grievance portal." />
+  <title>CivicLens – Smart City Grievance Analysis & Resolution Insights</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5aa5'/%3E%3Ccircle cx='16' cy='14' r='7' fill='none' stroke='white' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='14' r='2.5' fill='white'/%3E%3Crect x='12.5' y='19.5' width='7' height='2.5' fill='%231e9e6a'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Disclaimer: shown on every page/view -->
+  <div class="disclaimer-bar" role="note" aria-label="Important disclaimer">
+    <strong>CivicLens is an analytics and awareness tool for educational purposes.</strong>
+    Insights are indicative, not official. Always escalate grievances through your city&rsquo;s official channels.
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="7" fill="#0f5aa5"/>
+          <circle cx="16" cy="14" r="7" fill="none" stroke="#fff" stroke-width="2.5"/>
+          <circle cx="16" cy="14" r="2.5" fill="#fff"/>
+          <rect x="12.5" y="19.5" width="7" height="2.5" fill="#1e9e6a"/>
+        </svg>
+        <div>
+          <h1>CivicLens</h1>
+          <p class="tagline">Smart City Grievance Analysis & Resolution Insights</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="sdg-badge sdg11" title="UN Sustainable Development Goal 11">SDG 11<br>Sustainable Cities</span>
+        <span class="sdg-badge sdg16" title="UN Sustainable Development Goal 16">SDG 16<br>Strong Institutions</span>
+        <span id="netStatus" class="net-pill" aria-live="polite">Checking connection…</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Primary navigation">
+      <button class="tab-btn" role="tab" data-view="dashboard" aria-controls="view-dashboard" aria-selected="true">Dashboard</button>
+      <button class="tab-btn" role="tab" data-view="data" aria-controls="view-data" aria-selected="false">Data Setup</button>
+      <button class="tab-btn" role="tab" data-view="classify" aria-controls="view-classify" aria-selected="false">AI Classify</button>
+      <button class="tab-btn" role="tab" data-view="duplicates" aria-controls="view-duplicates" aria-selected="false">Duplicates</button>
+      <button class="tab-btn" role="tab" data-view="analytics" aria-controls="view-analytics" aria-selected="false">Analytics</button>
+      <button class="tab-btn" role="tab" data-view="library" aria-controls="view-library" aria-selected="false">Library</button>
+      <button class="tab-btn" role="tab" data-view="report" aria-controls="view-report" aria-selected="false">Report</button>
+    </nav>
+  </header>
+
+  <main id="main" class="container">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section id="view-dashboard" class="view active" role="tabpanel" aria-labelledby="h-dash">
+      <div class="view-head">
+        <h2 id="h-dash">City-wide overview</h2>
+        <p class="muted" id="dashMeta"></p>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3>Category breakdown</h3>
+          <div class="chart-box tall"><canvas id="chartCategory" role="img" aria-label="Bar chart of complaints by category"></canvas></div>
+        </article>
+        <article class="card">
+          <h3>Status distribution</h3>
+          <div class="chart-box tall"><canvas id="chartStatus" role="img" aria-label="Doughnut chart of open, in-progress and resolved complaints"></canvas></div>
+        </article>
+      </div>
+
+      <article class="card urgency-banner" id="urgencyBanner"></article>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3>Top 5 wards by complaint volume</h3>
+          <ol id="topWards" class="ward-list"></ol>
+        </article>
+        <article class="card">
+          <h3>Recent activity</h3>
+          <ul id="recentActivity" class="recent-list"></ul>
+        </article>
+      </div>
+
+      <article class="card" id="summaryCard">
+        <div class="card-title-row">
+          <h3>AI daily summary</h3>
+          <button id="btnSummary" class="btn primary">Generate today&rsquo;s summary</button>
+        </div>
+        <div id="summaryOut" class="summary-out" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <!-- ============ DATA SETUP ============ -->
+    <section id="view-data" class="view" role="tabpanel" aria-labelledby="h-data">
+      <div class="view-head">
+        <h2 id="h-data">Data setup</h2>
+        <p class="muted">Load the built-in sample dataset, or upload your own anonymised CSV.</p>
+      </div>
+
+      <article class="card">
+        <div class="btn-row">
+          <button id="btnLoadSample" class="btn primary">Load sample dataset</button>
+          <label class="btn" for="csvFile">Upload CSV…</label>
+          <input type="file" id="csvFile" accept=".csv,text/csv" hidden />
+          <button id="btnReset" class="btn ghost">Reset to sample data</button>
+        </div>
+        <p id="dataMeta" class="muted" aria-live="polite"></p>
+        <details class="csv-help">
+          <summary>Expected CSV format</summary>
+          <div class="help-body">
+            <p>Header row required. Columns (case-insensitive):</p>
+            <ul>
+              <li><strong>complaint text</strong> (or <em>text</em>, <em>description</em>) — required</li>
+              <li><strong>category</strong> — required (roads, streetlights, water, sanitation, drainage, encroachment, noise, other)</li>
+              <li><strong>ward</strong> — required</li>
+              <li><strong>date</strong> — required (YYYY-MM-DD or DD/MM/YYYY)</li>
+              <li><strong>status</strong> — required (open, in-progress, resolved)</li>
+              <li>optional: <strong>resolved date</strong>, <strong>urgency</strong> (low/moderate/high), <strong>sentiment</strong>, <strong>id</strong></li>
+            </ul>
+            <p>Use anonymised data only — no names, phone numbers or addresses of individuals.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="card" id="csvErrorsCard" hidden>
+        <h3>CSV validation report</h3>
+        <div id="csvErrors"></div>
+      </article>
+
+      <article class="card">
+        <h3>Loaded grievances</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Text</th><th>Category</th><th>Ward</th><th>Date</th><th>Status</th><th>Urgency</th></tr>
+            </thead>
+            <tbody id="dataPreview"></tbody>
+          </table>
+        </div>
+        <p class="muted" id="dataPreviewNote"></p>
+      </article>
+    </section>
+
+    <!-- ============ AI CLASSIFY ============ -->
+    <section id="view-classify" class="view" role="tabpanel" aria-labelledby="h-classify">
+      <div class="view-head">
+        <h2 id="h-classify">AI grievance classification</h2>
+        <p class="muted">Paste an unclassified complaint. Gemini suggests category, sentiment and urgency with a one-line reasoning you can correct.</p>
+      </div>
+
+      <article class="card">
+        <label for="classifyText" class="field-label">Complaint text</label>
+        <textarea id="classifyText" rows="4" maxlength="1000" placeholder="e.g. Live electrical wire hanging from the streetlight pole near the school lane, sparks at night"></textarea>
+        <div class="btn-row">
+          <button id="btnClassify" class="btn primary">Classify with AI</button>
+          <span id="classifyStatus" class="muted" aria-live="polite"></span>
+        </div>
+      </article>
+
+      <article class="card" id="classifyResultCard" hidden>
+        <h3>AI suggestion</h3>
+        <div id="classifyResult"></div>
+        <h3 class="mt">Review & correct</h3>
+        <div class="correct-grid">
+          <div>
+            <label for="corrCategory" class="field-label">Category</label>
+            <select id="corrCategory">
+              <option>roads</option><option>streetlights</option><option>water</option>
+              <option>sanitation</option><option>drainage</option><option>encroachment</option>
+              <option>noise</option><option>other</option>
+            </select>
+          </div>
+          <div>
+            <label for="corrSentiment" class="field-label">Sentiment</label>
+            <select id="corrSentiment"><option>frustrated</option><option>neutral</option><option>informational</option></select>
+          </div>
+          <div>
+            <label for="corrUrgency" class="field-label">Urgency</label>
+            <select id="corrUrgency"><option>low</option><option>moderate</option><option>high</option></select>
+          </div>
+          <div>
+            <label for="corrWard" class="field-label">Ward</label>
+            <select id="corrWard"></select>
+          </div>
+        </div>
+        <div class="btn-row mt">
+          <button id="btnAddRow" class="btn primary">Add to dataset</button>
+          <span class="muted">Adds the complaint (with your corrections) to the loaded dataset as an open grievance filed today.</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============ DUPLICATES ============ -->
+    <section id="view-duplicates" class="view" role="tabpanel" aria-labelledby="h-dupes">
+      <div class="view-head">
+        <h2 id="h-dupes">Duplicate & cluster detection</h2>
+        <p class="muted">Likely duplicates are complaints from the <strong>same ward</strong> with similar wording (trigram Jaccard similarity). Merge or resolve them only through your official system.</p>
+      </div>
+      <article class="card">
+        <div class="btn-row">
+          <label for="simThreshold" class="field-label inline">Similarity threshold: <output id="simOut">45%</output></label>
+          <input type="range" id="simThreshold" min="30" max="70" value="45" step="5" />
+          <button id="btnScan" class="btn primary">Scan for duplicates</button>
+        </div>
+      </article>
+      <div id="dupResults" aria-live="polite"></div>
+    </section>
+
+    <!-- ============ ANALYTICS ============ -->
+    <section id="view-analytics" class="view" role="tabpanel" aria-labelledby="h-ana">
+      <div class="view-head">
+        <h2 id="h-ana">Ward & trend analytics</h2>
+        <p class="muted">Filter by ward and date range. Trends are weekly; anomalies compare the last 7 days of data against the previous 4 weeks.</p>
+      </div>
+
+      <article class="card filter-card">
+        <div class="filter-grid">
+          <div>
+            <label for="anaWard" class="field-label">Ward</label>
+            <select id="anaWard"></select>
+          </div>
+          <div>
+            <label for="anaFrom" class="field-label">From</label>
+            <input type="date" id="anaFrom" />
+          </div>
+          <div>
+            <label for="anaTo" class="field-label">To</label>
+            <input type="date" id="anaTo" />
+          </div>
+          <div class="filter-actions">
+            <button id="btnAnaApply" class="btn primary">Apply filters</button>
+            <button id="btnAnaReset" class="btn ghost">Reset</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Complaint trend over time</h3>
+        <div class="chart-box tall"><canvas id="chartTrend" role="img" aria-label="Line chart of weekly complaint totals"></canvas></div>
+      </article>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3>Category distribution per ward</h3>
+          <div class="chart-box tall"><canvas id="chartWardCat" role="img" aria-label="Stacked bar chart of categories per ward"></canvas></div>
+        </article>
+        <article class="card">
+          <h3>Average resolution time per category</h3>
+          <div class="chart-box tall"><canvas id="chartRes" role="img" aria-label="Bar chart of average resolution days per category"></canvas></div>
+          <p class="muted small" id="resNote"></p>
+        </article>
+      </div>
+
+      <article class="card" id="anomalyCard">
+        <h3>Anomaly detection</h3>
+        <div id="anomalyOut" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <!-- ============ LIBRARY ============ -->
+    <section id="view-library" class="view" role="tabpanel" aria-labelledby="h-lib">
+      <div class="view-head">
+        <h2 id="h-lib">Grievance library</h2>
+        <p class="muted">Plain-language awareness guide: what causes common urban complaints, who typically handles them, expected timelines, and how to escalate through <strong>official</strong> channels.</p>
+      </div>
+      <article class="card">
+        <label for="libSearch" class="visually-hidden">Search the library</label>
+        <input type="search" id="libSearch" placeholder="Search the library (e.g. pothole, garbage, noise)…" />
+      </article>
+      <div id="libGrid" class="lib-grid"></div>
+    </section>
+
+    <!-- ============ REPORT ============ -->
+    <section id="view-report" class="view" role="tabpanel" aria-labelledby="h-rep">
+      <div class="view-head">
+        <h2 id="h-rep">Report & export</h2>
+        <p class="muted">Build a shareable summary of the filtered analytics, or export the underlying data as CSV.</p>
+      </div>
+
+      <article class="card filter-card">
+        <div class="filter-grid">
+          <div>
+            <label for="repWard" class="field-label">Ward</label>
+            <select id="repWard"></select>
+          </div>
+          <div>
+            <label for="repFrom" class="field-label">From</label>
+            <input type="date" id="repFrom" />
+          </div>
+          <div>
+            <label for="repTo" class="field-label">To</label>
+            <input type="date" id="repTo" />
+          </div>
+          <div class="filter-actions">
+            <button id="btnPrintReport" class="btn primary">Open printable report</button>
+            <button id="btnExportAnalytics" class="btn">Download analytics CSV</button>
+            <button id="btnExportRows" class="btn ghost">Download grievances CSV</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Report preview</h3>
+        <div id="reportPreview" class="report-preview"></div>
+      </article>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p><strong>CivicLens</strong> is an analytics and awareness tool for educational purposes. Insights are indicative, not official. Always escalate grievances through your city&rsquo;s official channels.</p>
+    <p class="muted">Student sustainability project · 1M1B / IBM SkillsBuild · UN SDG 11 (Sustainable Cities & Communities) & SDG 16 (Peace, Justice and Strong Institutions)</p>
+  </footer>
+
+  <!-- ============ AI CHAT WIDGET ============ -->
+  <div id="chatWidget">
+    <button id="chatToggle" class="chat-toggle" aria-expanded="false" aria-controls="chatPanel">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2 1 3.9 2.6 5.3-.1 1-.5 2.3-1.5 3.4-.3.3 0 .8.4.7 2.1-.4 3.6-1.3 4.5-2 .5.1 1 .1 1.6.1H12c5.5 0 10-3.6 10-8s-4.5-7.5-10-7.5z"/></svg>
+      <span>Ask CivicLens</span>
+    </button>
+    <div id="chatPanel" class="chat-panel" hidden>
+      <div class="chat-head">
+        <div>
+          <strong>CivicLens Assistant</strong>
+          <p class="muted small">Answers only from the loaded data. Awareness info, never official directives.</p>
+        </div>
+        <button id="chatClose" class="chat-close" aria-label="Close chat">&times;</button>
+      </div>
+      <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+      <form id="chatForm" class="chat-form">
+        <label for="chatInput" class="visually-hidden">Ask a question about the loaded data</label>
+        <input type="text" id="chatInput" maxlength="500" placeholder="e.g. Why are drainage complaints spiking in Ward 7?" autocomplete="off" />
+        <button type="submit" class="btn primary">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p style="padding:1rem;text-align:center">CivicLens needs JavaScript to run. Please enable it.</p></noscript>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/dataView.js"></script>
+  <script src="js/classify.js"></script>
+  <script src="js/duplicates.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/library.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>
