@@ -1,0 +1,26 @@
+{
+  "name": "civiclens",
+  "version": "1.0.0",
+  "description": "CivicLens - Smart City Grievance Analysis & Resolution Insights System. A 1M1B / IBM SkillsBuild student project aligned with UN SDG 11 and SDG 16. Analytics and awareness tool only - not an official grievance portal.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "generate:sample": "node data/generate-sample.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "civic-tech",
+    "sdg11",
+    "sdg16",
+    "grievance-analytics",
+    "gemini",
+    "smart-city"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
